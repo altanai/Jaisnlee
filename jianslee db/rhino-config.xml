@@ -1,0 +1,480 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE rhino-config PUBLIC "-//Open Cloud Ltd.//DTD Rhino Config 2.2//EN" "http://www.opencloud.com/dtd/rhino-config_2_2.dtd">
+
+<rhino-config>
+  <file-locations>
+    <temp-dir>$${rhino.dir.work}/tmp</temp-dir>
+    <deployment-dir save="False">$${rhino.dir.work}/deployments</deployment-dir>
+    <state-dir>$${rhino.dir.work}/state</state-dir>
+    <per-node-mlet-conf>$${rhino.dir.work.url}/config/mlet.conf</per-node-mlet-conf>
+    <savanna-base-url>$${rhino.dir.work.url}/config/savanna</savanna-base-url>
+    <security-policy-file>$${rhino.dir.work}/config/rhino.policy</security-policy-file>
+  </file-locations>
+
+  <cluster-group>rhino-cluster</cluster-group>
+  <admin-group>rhino-admin</admin-group>
+
+  <activity-handler>
+    <group-name>rhino-ah</group-name>
+    <message-id>10000</message-id>
+  </activity-handler>
+
+  <persistence-resources>
+    <replicated-sbbs>ReplicatedMemoryDatabase</replicated-sbbs>
+    <non-replicated-sbbs>LocalMemoryDatabase</non-replicated-sbbs>
+    <profiles>ProfileDatabase</profiles>
+    <resource-adaptors>ReplicatedMemoryDatabase</resource-adaptors>
+    <default-shutdown-flush-timeout>60000</default-shutdown-flush-timeout>
+  </persistence-resources>
+
+  <rhino-monitoring>
+    <group-name>rhino-monitoring</group-name>
+    <message-id>19999</message-id>
+    <sample-generations>6</sample-generations>
+    <sample-generation-rollover>5000</sample-generation-rollover>
+    <stats-session-timer>20000</stats-session-timer>
+    <heartbeat-period>5000</heartbeat-period>
+    <direct-min-port>17400</direct-min-port>
+    <direct-max-port>17699</direct-max-port>
+  </rhino-monitoring>
+
+  <query-is-alive>
+    <scan-period>180000</scan-period>
+    <threshold>150000</threshold>
+    <maximum-batch-size>128</maximum-batch-size>
+  </query-is-alive>
+
+  <timer-facility>
+    <timer-resolution>250</timer-resolution>
+    <timer-common-duration>32000</timer-common-duration>
+    <timer-max-duration>180000</timer-max-duration>
+    <timer-default-timeout>1000</timer-default-timeout>
+  </timer-facility>
+
+  <default-component-log4j-include>
+    <sbb-log4j-include included="False"/>
+    <ra-log4j-include included="True"/>
+    <library-log4j-include included="True"/>
+  </default-component-log4j-include>
+
+  <ocbb-resources>
+    <!--
+      Note: the names of the following resources must not be changed as the
+      core system depends on their presence:
+        LocalMemoryDatabase
+        ReplicatedMemoryDatabase
+        ManagementDatabase
+
+      Additionally, the SIP example services depend on the presence of the
+      JDBCResource resource.
+
+      Other resource names are referenced only by other elements in this
+      configuration file and so may be modified as needed.
+    -->
+
+
+    <memdb-local>
+      <jndi-name>LocalMemoryDatabase</jndi-name>
+      <committed-size>50M</committed-size>
+    </memdb-local>
+
+    <memdb>
+      <jndi-name>ReplicatedMemoryDatabase</jndi-name>
+      <message-id>10002</message-id>
+      <group-name>rhino-db</group-name>
+      <committed-size>50M</committed-size>
+    </memdb>
+
+    <!-- Begin Derby-specific configuration
+         To use PostgreSQL or Oracle Database rather than the embedded Derby database,
+         comment out this section and uncomment the respective section below.--> 
+    <memdb>
+      <jndi-name>ManagementDatabase</jndi-name>
+      <message-id>10003</message-id>
+      <group-name>rhino-db</group-name>
+      <committed-size>150M</committed-size>
+      <persistence>
+        <persistence-instance>
+          <datasource-class>org.apache.derby.jdbc.EmbeddedDataSource</datasource-class>
+          <dbid>rhino_sdk_management</dbid>
+          <parameter>
+            <param-name>databaseName</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_NAME}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>user</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_USER}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>password</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_PASSWORD}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>loginTimeout</param-name>
+            <param-type>java.lang.Integer</param-type>
+            <param-value>30</param-value>
+          </parameter>
+        </persistence-instance>
+      </persistence>
+    </memdb>
+
+    <memdb>
+      <jndi-name>ProfileDatabase</jndi-name>
+      <message-id>10004</message-id>
+      <group-name>rhino-db</group-name>
+      <committed-size>50M</committed-size>
+      <persistence>
+        <persistence-instance>
+          <datasource-class>org.apache.derby.jdbc.EmbeddedDataSource</datasource-class>
+          <dbid>rhino_sdk_profiles</dbid>
+          <parameter>
+            <param-name>databaseName</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_NAME}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>user</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_USER}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>password</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_PASSWORD}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>loginTimeout</param-name>
+            <param-type>java.lang.Integer</param-type>
+            <param-value>30</param-value>
+          </parameter>
+        </persistence-instance>
+      </persistence>
+    </memdb>
+
+      <jdbc>
+      <jndi-name>JDBCResource</jndi-name>
+      <datasource-class>org.apache.derby.jdbc.EmbeddedDataSource</datasource-class>
+      <parameter>
+        <param-name>databaseName</param-name>
+        <param-type>java.lang.String</param-type>
+        <param-value>${MANAGEMENT_DATABASE_NAME}</param-value>
+      </parameter>
+      <parameter>
+        <param-name>user</param-name>
+        <param-type>java.lang.String</param-type>
+        <param-value>${MANAGEMENT_DATABASE_USER}</param-value>
+      </parameter>
+      <parameter>
+        <param-name>password</param-name>
+        <param-type>java.lang.String</param-type>
+        <param-value>${MANAGEMENT_DATABASE_PASSWORD}</param-value>
+      </parameter>
+      <parameter>
+        <param-name>loginTimeout</param-name>
+        <param-type>java.lang.Integer</param-type>
+        <param-value>30</param-value>
+      </parameter>
+      <connection-pool>
+        <max-connections>15</max-connections>
+        <idle-check-interval>0.0</idle-check-interval>
+      </connection-pool>
+    </jdbc>  
+    
+    
+  <jdbc>
+ 	<jndi-name>ExternalDataSource</jndi-name>
+ 	<datasource-class>org.postgresql.ds.PGSimpleDataSource</datasource-class>
+ <parameter>
+  <param-name>serverName</param-name>
+  <param-type>java.lang.String</param-type>
+  <param-value>localhost</param-value>
+ </parameter>
+ <parameter>
+<param-name>portNumber</param-name>
+<param-type>java.lang.Integer</param-type>
+<param-value>5432</param-value>
+ </parameter>
+ <parameter>
+  <param-name>databaseName</param-name>
+  <param-type>java.lang.String</param-type>
+  <param-value>test</param-value>
+ </parameter>
+ <parameter>
+  <param-name>user</param-name>
+  <param-type>java.lang.String</param-type>
+  <param-value>postgres</param-value>
+ </parameter>
+ <parameter>
+  <param-name>password</param-name>
+  <param-type>java.lang.String</param-type>
+  <param-value>tcs@1234</param-value>
+ </parameter>
+<parameter>
+<param-name>loginTimeout</param-name>
+<param-type>java.lang.Integer</param-type>
+<param-value>30</param-value>
+</parameter>
+<parameter>
+<param-name>prepareThreshold</param-name>
+<param-type>java.lang.Integer</param-type>
+<param-value>1</param-value>
+</parameter>
+<!-- <connection-pool>
+  <max-connections>15</max-connections>
+  <max-pool-size>15</max-pool-size>
+  <max-idle-time>600</max-idle-time>
+  <idle-check-interval>30</idle-check-interval>
+  <connection-pool-timeout>5000</connection-pool-timeout>
+ </connection-pool> -->
+</jdbc>
+
+
+    <!-- End of Derby-specific database. -->
+
+
+    <!-- Begin PostgreSQL configuration.
+         To use PostgreSQL rather than the embedded Derby database, comment
+         out the Derby section above and uncomment the section below. 
+ <memdb>
+      <jndi-name>ManagementDatabase</jndi-name>
+      <message-id>10003</message-id>
+      <group-name>rhino-db</group-name>
+      <committed-size>150M</committed-size>
+      <persistence>
+        <persistence-instance>
+          <datasource-class>org.apache.derby.jdbc.EmbeddedDataSource</datasource-class>
+          <dbid>rhino_sdk_management</dbid>
+          <parameter>
+            <param-name>databaseName</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_NAME}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>user</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_USER}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>password</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_PASSWORD}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>loginTimeout</param-name>
+            <param-type>java.lang.Integer</param-type>
+            <param-value>30</param-value>
+          </parameter>
+        </persistence-instance>
+      </persistence>
+    </memdb>
+
+    <memdb>
+      <jndi-name>ProfileDatabase</jndi-name>
+      <message-id>10004</message-id>
+      <group-name>rhino-db</group-name>
+      <committed-size>50M</committed-size>
+      <persistence>
+        <persistence-instance>
+          <datasource-class>org.apache.derby.jdbc.EmbeddedDataSource</datasource-class>
+          <dbid>rhino_sdk_profiles</dbid>
+          <parameter>
+            <param-name>databaseName</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_NAME}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>user</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>postgres</param-value>
+          </parameter>
+          <parameter>
+            <param-name>password</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_PASSWORD}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>loginTimeout</param-name>
+            <param-type>java.lang.Integer</param-type>
+            <param-value>30</param-value>
+          </parameter>
+        </persistence-instance>
+      </persistence>
+    </memdb>
+    
+    <jdbc>
+      <jndi-name>JDBCResource</jndi-name>
+      <datasource-class>org.apache.derby.jdbc.EmbeddedDataSource</datasource-class>
+      <parameter>
+        <param-name>databaseName</param-name>
+        <param-type>java.lang.String</param-type>
+        <param-value>${MANAGEMENT_DATABASE_NAME}</param-value>
+      </parameter>
+      <parameter>
+        <param-name>user</param-name>
+        <param-type>java.lang.String</param-type>
+        <param-value>${MANAGEMENT_DATABASE_USER}</param-value>
+      </parameter>
+      <parameter>
+        <param-name>password</param-name>
+        <param-type>java.lang.String</param-type>
+        <param-value>${MANAGEMENT_DATABASE_PASSWORD}</param-value>
+      </parameter>
+      <parameter>
+        <param-name>loginTimeout</param-name>
+        <param-type>java.lang.Integer</param-type>
+        <param-value>30</param-value>
+      </parameter>
+      <connection-pool>
+        <max-connections>15</max-connections>
+        <idle-check-interval>0.0</idle-check-interval>
+      </connection-pool>
+    </jdbc>
+    
+    
+    <jdbc>
+      <jndi-name>JDBCResource</jndi-name>
+      <datasource-class>org.postgresql.ds.PGSimpleDataSource</datasource-class>
+     <parameter>
+ 			 <param-name>serverName</param-name>
+  			<param-type>java.lang.String</param-type>
+ 	 <param-value>jdbc:postgresql://10.1.5.20:5432/test</param-value>
+ 	</parameter>
+	 <parameter>
+  	<param-name>databaseName</param-name>
+  	<param-type>java.lang.String</param-type>
+  	<param-value>test</param-value>
+ 	</parameter>
+ 	<parameter>
+  	<param-name>user</param-name>
+ 	 <param-type>java.lang.String</param-type>
+ 	 <param-value>postgres</param-value>
+	 </parameter>
+	 <parameter>
+	  <param-name>password</param-name>
+	  <param-type>java.lang.String</param-type>
+	  <param-value>tcs@1234</param-value>
+	 </parameter>
+	 <connection-pool>
+	  <max-connections>15</max-connections>
+	  <max-pool-size>15</max-pool-size>
+	  <max-idle-time>600</max-idle-time>
+	  <idle-check-interval>30</idle-check-interval>
+	  <connection-pool-timeout>5000</connection-pool-timeout>
+	 </connection-pool>
+	</jdbc>
+    -->
+    <!-- End of PostgreSQL configuration. -->
+
+
+    <!-- Begin Oracle Database configuration.
+         To use Oracle Database rather than the embedded Derby database,
+         comment out the Derby section above and uncomment the section below. -->
+    <!--
+    <memdb>
+      <jndi-name>ManagementDatabase</jndi-name>
+      <message-id>10003</message-id>
+      <group-name>rhino-db</group-name>
+      <committed-size>150M</committed-size>
+      <persistence>
+        <persistence-instance>
+          <datasource-class>oracle.jdbc.pool.OracleDataSource</datasource-class>
+          <dbid>rhino_sdk_management</dbid>
+          <parameter>
+            <param-name>URL</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>jdbc:oracle:thin:@${MANAGEMENT_DATABASE_HOST}:${MANAGEMENT_DATABASE_PORT}:${MANAGEMENT_DATABASE_NAME}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>user</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_USER}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>password</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_PASSWORD}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>loginTimeout</param-name>
+            <param-type>java.lang.Integer</param-type>
+            <param-value>30</param-value>
+          </parameter>
+        </persistence-instance>
+      </persistence>
+    </memdb>
+
+    <memdb>
+      <jndi-name>ProfileDatabase</jndi-name>
+      <message-id>10004</message-id>
+      <group-name>rhino-db</group-name>
+      <committed-size>50M</committed-size>
+      <persistence>
+        <persistence-instance>
+          <datasource-class>oracle.jdbc.pool.OracleDataSource</datasource-class>
+          <dbid>rhino_sdk_profiles</dbid>
+          <parameter>
+            <param-name>URL</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>jdbc:oracle:thin:@${MANAGEMENT_DATABASE_HOST}:${MANAGEMENT_DATABASE_PORT}:${MANAGEMENT_DATABASE_NAME}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>user</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_USER}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>password</param-name>
+            <param-type>java.lang.String</param-type>
+            <param-value>${MANAGEMENT_DATABASE_PASSWORD}</param-value>
+          </parameter>
+          <parameter>
+            <param-name>loginTimeout</param-name>
+            <param-type>java.lang.Integer</param-type>
+            <param-value>30</param-value>
+          </parameter>
+        </persistence-instance>
+      </persistence>
+    </memdb>
+
+    <jdbc>
+      <jndi-name>JDBCResource</jndi-name>
+      <datasource-class>oracle.jdbc.pool.OracleDataSource</datasource-class>
+      <parameter>
+        <param-name>URL</param-name>
+        <param-type>java.lang.String</param-type>
+        <param-value>jdbc:oracle:thin:@${MANAGEMENT_DATABASE_HOST}:${MANAGEMENT_DATABASE_PORT}:${MANAGEMENT_DATABASE_NAME}</param-value>
+      </parameter>
+      <parameter>
+        <param-name>user</param-name>
+        <param-type>java.lang.String</param-type>
+        <param-value>${MANAGEMENT_DATABASE_USER}</param-value>
+      </parameter>
+      <parameter>
+        <param-name>password</param-name>
+        <param-type>java.lang.String</param-type>
+        <param-value>${MANAGEMENT_DATABASE_PASSWORD}</param-value>
+      </parameter>
+      <parameter>
+        <param-name>loginTimeout</param-name>
+        <param-type>java.lang.Integer</param-type>
+        <param-value>30</param-value>
+      </parameter>
+      <connection-pool>
+        <max-connections>15</max-connections>
+        <max-pool-size>15</max-pool-size>
+        <max-idle-time>600</max-idle-time>
+        <idle-check-interval>30</idle-check-interval>
+        <connection-pool-timeout>5000</connection-pool-timeout>
+      </connection-pool>
+    </jdbc>
+    -->
+    <!-- End of Oracle Database configuration. -->
+  </ocbb-resources>
+
+  <ejb-resources>
+  </ejb-resources>
+</rhino-config>

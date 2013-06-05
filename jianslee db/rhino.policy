@@ -1,0 +1,1443 @@
+grant {
+	permission java.security.AllPermission;
+	};
+
+
+grant {
+
+
+
+  permission java.io.FilePermission "$${java.home}$${/}lib$${/}rt.jar", "read";
+  permission java.io.FilePermission "$${java.home}$${/}lib$${/}jaxp.properties","read";
+
+  // Needed by default logging configuration.
+  permission java.io.FilePermission "$${rhino.dir.work}$${/}log$${/}-","read,write";
+
+  // Java "standard" properties that can be read by anyone
+  permission java.util.PropertyPermission "java.version", "read";
+  permission java.util.PropertyPermission "java.vendor", "read";
+  permission java.util.PropertyPermission "java.vendor.url", "read";
+  permission java.util.PropertyPermission "java.class.version", "read";
+  permission java.util.PropertyPermission "os.name", "read";
+  permission java.util.PropertyPermission "os.version", "read";
+  permission java.util.PropertyPermission "os.arch", "read";
+  permission java.util.PropertyPermission "file.separator", "read";
+  permission java.util.PropertyPermission "path.separator", "read";
+  permission java.util.PropertyPermission "line.separator", "read";
+
+  permission java.util.PropertyPermission "java.specification.version", "read";
+  permission java.util.PropertyPermission "java.specification.vendor", "read";
+  permission java.util.PropertyPermission "java.specification.name", "read";
+
+  permission java.util.PropertyPermission "java.vm.specification.version", "read";
+  permission java.util.PropertyPermission "java.vm.specification.vendor", "read";
+  permission java.util.PropertyPermission "java.vm.specification.name", "read";
+  permission java.util.PropertyPermission "java.vm.version", "read";
+  permission java.util.PropertyPermission "java.vm.vendor", "read";
+  permission java.util.PropertyPermission "java.vm.name", "read";
+};
+
+// Standard extensions get all permissions by default
+grant codeBase "$${java.home.url}/lib/ext/*" {
+  permission java.security.AllPermission;
+};
+
+grant codeBase "$${java.home.url}/jre/lib/ext/*" {
+  permission java.security.AllPermission;
+};
+
+// Allow javac and jar full access; actual access is limited by
+// the caller's security context.
+grant codeBase "$${java.home.url}/../lib/tools.jar" {
+  permission java.security.AllPermission;
+};
+
+grant codeBase "$${rhino.dir.base.url}/lib/RhinoSDKBoot.jar" {
+  permission java.security.AllPermission;
+};
+
+grant codeBase "$${rhino.dir.base.url}/lib/RhinoSDKRuntime.jar" {
+  permission java.security.AllPermission;
+};
+
+grant codeBase "$${rhino.dir.base.url}/lib/rhino-logging.jar" {
+  // Needed to read log settings
+  permission java.util.PropertyPermission "*", "read,write";
+};
+
+grant codeBase "$${rhino.dir.base.url}/lib/logging-ext.jar" {
+  // Needed to read log settings
+  permission java.util.PropertyPermission "*", "read,write";
+  // Needed to listen for client connections
+  permission java.net.SocketPermission "*", "listen,accept,resolve";
+};
+
+grant codeBase "$${rhino.dir.base.url}/lib/log4j.jar" {
+  permission java.util.PropertyPermission "log4j.*", "read";
+
+  permission java.io.FilePermission "$${rhino.dir.work}$${/}log$${/}-", "write,read";
+  permission java.net.SocketPermission "*", "connect,resolve,listen";
+};
+
+grant codeBase "$${rhino.dir.base.url}/lib/postgresql.jar" {
+  permission java.net.SocketPermission "*", "connect,resolve";
+};
+
+grant codeBase "$${rhino.dir.base.url}/lib/ojdbc6.jar" {
+  permission java.net.SocketPermission "*", "connect,resolve";
+  permission java.util.PropertyPermission "oracle.*", "read";
+  permission java.util.PropertyPermission "javax.net.ssl.*", "read";
+  permission java.util.PropertyPermission "user.name", "read";
+  permission javax.management.MBeanPermission "oracle.jdbc.driver.OracleDiagnosabilityMBean", "registerMBean";
+};
+
+grant codeBase "$${rhino.dir.base.url}/lib/derby.jar" {
+  permission java.util.PropertyPermission "user.dir", "read";
+  permission java.util.PropertyPermission "derby.*", "read";
+  permission java.io.FilePermission "$${rhino.dir.work}","read,write";
+  permission java.io.FilePermission "$${rhino.dir.work}$${/}-","read,write";
+  permission java.io.FilePermission "$${rhino.dir.work}$${/}${MANAGEMENT_DATABASE_NAME}$${/}-","read,write,delete";
+  permission java.lang.RuntimePermission "createClassLoader";
+};
+
+// Note: the special property $${{list:local.ips}} used in SocketPermissions below will
+// get replaced by a line for each local IP address on this host.
+// To permit remote access to Rhino services, replace $${{list:local.ips}} with
+// "*" or specific IP addresses.
+
+grant codeBase "$${rhino.dir.base.url}/lib/rem-container.jar" {
+  permission java.io.FilePermission "$${rhino.dir.base}$${/}lib$${/}rem.war", "read";
+  permission java.io.FilePermission "$${rhino.dir.work}", "read,write";
+  permission java.io.FilePermission "$${rhino.dir.work}$${/}-", "read,write,delete";
+  permission java.util.PropertyPermission "*", "read,write";
+  permission java.lang.RuntimePermission "*";
+  permission java.lang.reflect.ReflectPermission "*";
+  permission javax.management.MBeanPermission "*", "*";
+  permission java.net.SocketPermission "$${{list:local.ips}}:${REM_PORT}", "listen,resolve";
+  permission java.net.SocketPermission "$${{list:local.ips}}", "accept,connect,resolve";
+
+  // Uncomment the following line to allow remote connections
+  // permission java.net.SocketPermission "*", "accept,resolve";
+};
+
+// Element Manager library extraction location
+grant codeBase "$${rhino.dir.work.url}/tmp/-" {
+  permission java.io.FilePermission "$${rhino.dir.base}$${/}lib$${/}-", "read";
+  permission java.io.FilePermission "$${rhino.dir.work}", "read,write";
+  permission java.io.FilePermission "$${rhino.dir.work}$${/}tmp$${/}-", "read,write,delete";
+  permission java.util.PropertyPermission "*", "read,write";
+  permission java.lang.RuntimePermission "*";
+  permission java.lang.reflect.ReflectPermission "*";
+  permission javax.management.MBeanPermission "*", "*";
+  permission javax.management.MBeanServerPermission "*";
+};
+
+// Resource adaptors (and other SLEE component jars) are deployed at a location
+// determined at runtime, somewhere under $${rhino.dir.work}/deployments/. To
+// selectively grant permissions to a particular RA, edit the
+// security-permissions element in the RA's resource-adaptor-jar.xml file.
+//
+
+grant codeBase "$${rhino.dir.work.url}/deployments/-" {
+  // Basic permissions required by SLEE spec for SBBs
+  permission java.util.PropertyPermission "*", "read";
+
+  // allow deployed code to read their own jars
+  permission java.io.FilePermission "$${rhino.dir.work}$${/}deployments$${/}-", "read";
+};
+
+// all code can register with the management framework
+grant {
+    //security 
+    permission javax.management.MBeanTrustPermission "register";
+
+    //server factory 
+    permission javax.management.MBeanServerPermission "createMBeanServer,findMBeanServer";
+
+    //jmx remote server delgate
+    permission javax.management.MBeanPermission "javax.management.MBeanServerDelegate","addNotificationListener,registerMBean";
+    permission javax.management.MBeanPermission "*","addNotificationListener";
+
+    //fix for JMX remote NoCallStackClassLoader
+    permission java.net.SocketPermission "$${{list:local.ips}}:${JMX_SERVICE_PORT}", "connect,resolve";
+    permission java.net.SocketPermission "$${{list:local.ips}}:${RHINO_SSL_PORT}", "connect,resolve";
+
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#getState[javax.slee.management:name=SleeManagement]", "invoke";
+
+    permission java.util.PropertyPermission "com.sun.org.apache.xalan.*", "read";
+};
+
+
+// admin role -- given only to the admin user, no MBean restrictions
+grant principal com.opencloud.rhino.security.principal.RhinoRole "admin" {
+    permission javax.management.MBeanPermission "*","getMBeanInfo,getAttribute,getObjectInstance,queryNames,queryMBeans,setAttribute,invoke,unregisterMBean,instantiate,getDomains,getClassLoader";
+};
+
+// the following pre-defined roles can be used as the basis for custom roles
+//  rhino - contains all possible MBean permissions
+//  view  - contains only MBean permissions that do not change any runtime state or configuration
+
+grant principal com.opencloud.rhino.security.principal.RhinoRole "rhino" {
+
+    // Need getDomains permission to logon the embedded web-console        
+    permission javax.management.MBeanPermission "*","getDomains";
+ 
+   // SLEE-created MBean permissions
+    permission javax.management.MBeanPermission "com.opencloud.rhino.deployed.*", "getMBeanInfo,queryNames,queryMBeans,getAttribute,setAttribute,invoke,unregisterMBean";
+    
+    //
+    // com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean#Types", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean#getFileType", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean#getKeys", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean#removeKey", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean#exportKey", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean#getKeyDescription", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean#importKey", "invoke";
+
+    //
+    // com.opencloud.rhino.limiting.LimiterManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#Limiters", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#LimiterEndpoints", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#LimiterEndpointsInfo", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#HierarchySummary", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#LimiterRampUpMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#SystemInputLimiterMBean", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#removeLimiter", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#getLimiterForEndpoint", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#getLimiterMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#createLimiter", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#disconnectLimiterEndpoint", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#connectLimiterEndpoint", "invoke";
+
+    //
+    // com.opencloud.rhino.limiting.LimiterRampUpMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterRampUpMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterRampUpMBean#EventsPerIncrement", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterRampUpMBean#Enabled", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterRampUpMBean#RateIncrement", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterRampUpMBean#StartRate", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterRampUpMBean#disableRampUp", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterRampUpMBean#enableRampUp", "invoke";
+
+    //
+    // com.opencloud.rhino.limiting.QueueSaturationLimiterMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#Name", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#ChildLimiters", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#BypassedDefault", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#Parent", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#ConfigSummary", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#MaxSaturationDefault", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#Type", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#ConnectedEndPoints", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#getInfoSummary", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#setMaxSaturationForNode", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#getMaxSaturationForNode", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#setBypassedForNode", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#useDefaultConfig", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#isBypassedForNode", "invoke";
+
+    //
+    // com.opencloud.rhino.limiting.RateLimiterMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#Name", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#ChildLimiters", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#BypassedDefault", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#Parent", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#TimeUnit", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#DepthDefault", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#ConfigSummary", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#Type", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#ConnectedEndPoints", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#MaxRateDefault", "getAttribute,setAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#setDepthForNode", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#getMaxRateForNode", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#setMaxRateForNode", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#getInfoSummary", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#getDepthForNode", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#setBypassedForNode", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#useDefaultConfig", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#isBypassedForNode", "invoke";
+
+    //
+    // com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#NodesWithPerNodeActivationState", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#removeActivity", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getLongRunningTransactions", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getTimers", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getTimerInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#removeActivityBinding", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getSbbInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#cancelTimer", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getEventRouterThreadState", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getActivityInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getBoundActivities", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#initiateCleanup", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#rollbackLongRunningTransaction", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getSbbs", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#removeSbb", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#removePerNodeActivationState", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#hasPerNodeActivationState", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getActivities", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getAttachedActivities", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#copyPerNodeActivationState", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getTransactionStateInfo", "invoke";
+
+    //
+    // com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#ClusterState", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#AllClusterNodes", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#QuorumNodes", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#NodeID", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#ClusterHousekeeping", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#EventRouterNodes", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#Version", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#isReady", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#getNodeHousekeeping", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#markAllActivitiesForRemoval", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#removeAllSbbs", "invoke";
+
+    //
+    // com.opencloud.rhino.management.alarm.AlarmMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#Alarms", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#getAlarms", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#isActive", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#clearAlarms", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#clearAlarm", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#rebroadcastActiveAlarmNotifications", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#getDescriptors", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#logAllActiveAlarms", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#getDescriptor", "invoke";
+
+    //
+    // com.opencloud.rhino.management.deployment.DeploymentMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#ResourceAdaptorTypes", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#Services", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#Libraries", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#Sbbs", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#EventTypes", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#ResourceAdaptors", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#DeployableUnits", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#ProfileSpecifications", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#getDeployableUnit", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#install", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#uninstall", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#getReferringComponents", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#isInstalled", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#getDescriptors", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#getSbbs", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#getDescriptor", "invoke";
+
+    //
+    // com.opencloud.rhino.management.profile.ProfileProvisioningMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#ProfileTables", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#renameProfileTable", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#removeProfile", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#createProfileTable", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfilesByDynamicQuery", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfileTables", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#createProfile", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#createProfiles", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfilesByIndexedAttribute", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#removeProfileTable", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#exportProfiles", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#importProfiles", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfilesByStaticQuery", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getDefaultProfile", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfilesByAttribute", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfile", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfileSpecification", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfiles", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfileTableUsageMBean", "invoke";
+
+    //
+    // com.opencloud.rhino.management.profile.ProfileTableUsageMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#ProfileTableName", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#UsageMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#UsageParameterSets", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#UsageNotificationManagerMBean", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#getUsageMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#createUsageParameterSet", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#resetAllUsageParameters", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#removeUsageParameterSet", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#close", "invoke";
+
+    //
+    // com.opencloud.rhino.management.resource.ResourceManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#ResourceAdaptorEntities", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#LinkNames", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#unbindLinkName", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getState", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#activateResourceAdaptorEntity", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getResourceUsageMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#createResourceAdaptorEntity", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#removeResourceAdaptorEntity", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getResourceAdaptorEntities", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#updateConfigurationProperties", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getNodes", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#deactivateResourceAdaptorEntity", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getBoundSbbs", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getConfigurationProperties", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#bindLinkName", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getResourceAdaptorEntity", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getLinkNames", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#reassignActivities", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getResourceAdaptor", "invoke";
+
+    //
+    // com.opencloud.rhino.management.resource.ResourceUsageMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#UsageMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#EntityName", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#UsageParameterSets", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#UsageNotificationManagerMBean", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#getUsageMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#createUsageParameterSet", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#resetAllUsageParameters", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#removeUsageParameterSet", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#close", "invoke";
+
+    //
+    // com.opencloud.rhino.management.SleeManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#AlarmMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#ProfileProvisioningMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#StatsManagementMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#DeploymentMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#Subsystems", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#TraceMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#LimiterManagementMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#RhinoInspectorMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#ContainerConfigurationMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#ResourceManagementMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#State", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#SleeVendor", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#SleeVersion", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#SleeName", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#ServiceManagementMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#UserTransactionManagerMBean", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#getUsageMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#stop", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#getState", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#getUsageNotificationManagerMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#start", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#getUsageParameterSets", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#annotateLog", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#kill", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#hasUsage", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#getNodes", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#shutdown", "invoke";
+
+    //
+    // com.opencloud.rhino.management.service.ServiceManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceManagementMBean#activate", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceManagementMBean#getState", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceManagementMBean#deactivateAndActivate", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceManagementMBean#deactivate", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceManagementMBean#getNodes", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceManagementMBean#getServiceUsageMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceManagementMBean#getServices", "invoke";
+
+    //
+    // com.opencloud.rhino.management.service.ServiceUsageMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean#Service", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean#createUsageParameterSet", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean#resetAllUsageParameters", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean#getSbbUsageMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean#getUsageParameterSets", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean#removeUsageParameterSet", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean#getSbbUsageNotificationManagerMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean#close", "invoke";
+
+    //
+    // com.opencloud.rhino.management.trace.TraceMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.trace.TraceMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.trace.TraceMBean#getTraceLevel", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.trace.TraceMBean#getTracersUsed", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.trace.TraceMBean#unsetTraceLevel", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.trace.TraceMBean#getTracersSet", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.trace.TraceMBean#setTraceLevel", "invoke";
+
+    //
+    // com.opencloud.rhino.management.usage.UsageMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageMBean#UsageParameterSet", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageMBean#UsageNotificationManagerMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageMBean#NotificationSource", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageMBean#resetAllUsageParameters", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageMBean#tabulateAll", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageMBean#close", "invoke";
+
+    //
+    // com.opencloud.rhino.management.usage.UsageNotificationManagerMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageNotificationManagerMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageNotificationManagerMBean#NotificationSource", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageNotificationManagerMBean#tabulateAll", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageNotificationManagerMBean#close", "invoke";
+
+    //
+    // com.opencloud.rhino.management.usertx.UserTransactionManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usertx.UserTransactionManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usertx.UserTransactionManagementMBean#HasUserTransaction", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usertx.UserTransactionManagementMBean#startUserTransaction", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usertx.UserTransactionManagementMBean#rollbackUserTransaction", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usertx.UserTransactionManagementMBean#commitUserTransaction", "invoke";
+
+    //
+    // com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#ParameterSetTypeMappings", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#ParameterSetTypeDescriptions", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#ParameterSetNames", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#ParameterSetTypes", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#Members", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#RootParameterSetNames", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#subscribeSample", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#createDirectSession", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#subscribeCounter", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#getParameterSetNames", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#createSession", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#startCollecting", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#getAccumulatedSamples", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#removeSession", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#getParameterSetTypeDescription", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#stopCollecting", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#getParameterSetType", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#unsubscribe", "invoke";
+
+    //
+    // com.opencloud.rhino.logging.LoggingManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#Appenders", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#LogKeys", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#ColourConsole", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#ShowThread", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#ShowNDC", "getAttribute,setAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#removeAppenderRef", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getEffectiveLogLevel", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getCustomAppenderInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getLogLevel", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#createSocketAppender", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getThreshold", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getFileAppenderInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#setThreshold", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#rollover", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getAppenderRefs", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getSocketAppenderInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getSyslogAppenderInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getAppenderProperties", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#createSyslogAppender", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#createLogNotificationAppender", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#createFileAppender", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#isExists", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getCustomAppenderClassName", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#createAppender", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#rolloverAllLogFiles", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#removeAppender", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#setAdditivity", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#addAppenderRef", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getAdditivity", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#setLogLevel", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getAppenderType", "invoke";
+
+    //
+    // com.opencloud.rhino.management.AuditingManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.AuditingManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.AuditingManagementMBean#AuditLevel", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.AuditingManagementMBean#OpcodeXML", "getAttribute";
+
+    //
+    // com.opencloud.rhino.snmp.SNMPManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#Enabled", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#LoopbackAddressesAllowed", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#Description", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#Contact", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#DefaultSubnet", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#PortBindingsSaved", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#MIBs", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#Location", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#OIDMappings", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#NodeConfigIDs", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#DefaultLowPort", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#NotificationPort", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#Name", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#DefaultHighPort", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#AgentState", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#NodeConfigs", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#NotificationsEnabled", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#AddressBindingsSaved", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#NotificationAddress", "getAttribute,setAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#setNotificationTarget", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#getOIDMapping", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#getSNMPNodeMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#setDetails", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#clearNodeConfigs", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#setOIDMapping", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#setDefaultPortRange", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#clearOIDMapping", "invoke";
+
+    //
+    // com.opencloud.rhino.snmp.SNMPNodeMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPNodeMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPNodeMBean#BindPort", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPNodeMBean#BindAddresses", "getAttribute,setAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPNodeMBean#setBindConfig", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPNodeMBean#clearAddressConfig", "invoke";
+
+    //
+    // com.opencloud.rhino.config.staging.StagingQueueManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.staging.StagingQueueManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.staging.StagingQueueManagementMBean#MaximumAge", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.staging.StagingQueueManagementMBean#MaximumSize", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.staging.StagingQueueManagementMBean#ThreadCount", "getAttribute,setAttribute";
+
+    //
+    // com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean#DefaultServiceObjectPoolConfigMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean#DefaultObjectPoolConfigMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean#DefaultProfileTableObjectPoolConfigMBean", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean#getServiceObjectPoolConfigMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean#getProfileTableObjectPoolConfigMBean", "invoke";
+
+    //
+    // com.opencloud.rhino.config.ocbb.ObjectPoolMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean#StalePoolSize", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean#PooledPoolSize", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean#StatePoolSize", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean#ReadyPoolSize", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean#UseDefaults", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean#InitialPooledPoolSize", "getAttribute,setAttribute";
+
+    //
+    // com.opencloud.rhino.monitoring.rules.config.ThresholdRuleManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleManagementMBean#ScanPeriod", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleManagementMBean#Rules", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleManagementMBean#removeRule", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleManagementMBean#createRule", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleManagementMBean#getRule", "invoke";
+
+    //
+    // com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#ResetConditions", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#AlarmLevel", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#Active", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#TriggerPeriod", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#AlarmMessage", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#TriggerConditionsOperator", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#ResetPeriod", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#AlarmType", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#ResetConditionsOperator", "getAttribute,setAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#TriggerConditions", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#deactivateRule", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#addTriggerCondition", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#removeResetCondition", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#addResetCondition", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#setAlarm", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#activateRule", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#removeTriggerCondition", "invoke";
+
+    //
+    // com.opencloud.rhino.config.license.LicenseManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#LicenseSummary", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#Licenses", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#LicensedVersions", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#LicensedHosts", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#LicensedFunctions", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#install", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#getLicenseMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#uninstall", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#getLicensedCapacity", "invoke";
+
+    //
+    // com.opencloud.rhino.config.license.LicenseMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean#Functions", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean#ValidFrom", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean#ValidUntil", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean#CurrentlyValid", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean#Versions", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean#getLicensedCapacity", "invoke";
+
+    //
+    // com.opencloud.slee.mlet.jmxr.JMXRAdaptor
+    //
+    permission javax.management.MBeanPermission "com.opencloud.slee.mlet.jmxr.JMXRAdaptor", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.slee.mlet.jmxr.JMXRAdaptor#State", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.slee.mlet.jmxr.JMXRAdaptor#ConnectorsString", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.slee.mlet.jmxr.JMXRAdaptor#stop", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.slee.mlet.jmxr.JMXRAdaptor#restart", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.slee.mlet.jmxr.JMXRAdaptor#start", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.slee.mlet.jmxr.JMXRAdaptor#shutdown", "invoke";
+
+    //
+    // com.opencloud.management.loading.MLetLoaderMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.management.loading.MLetLoaderMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.management.loading.MLetLoaderMBean#reloadMBeans", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.management.loading.MLetLoaderMBean#reloadMBeansFromURL", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.management.loading.MLetLoaderMBean#loadMLet", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.management.loading.MLetLoaderMBean#loadMBeansFromURL", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.management.loading.MLetLoaderMBean#unloadMBeansFromURL", "invoke";
+
+    //
+    // javax.slee.profile.ProfileMBean
+    //
+    permission javax.management.MBeanPermission "javax.slee.profile.ProfileMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "javax.slee.profile.ProfileMBean#ProfileWriteable", "getAttribute";
+    permission javax.management.MBeanPermission "javax.slee.profile.ProfileMBean#ProfileDirty", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "javax.slee.profile.ProfileMBean#closeProfile", "invoke";
+    permission javax.management.MBeanPermission "javax.slee.profile.ProfileMBean#restoreProfile", "invoke";
+    permission javax.management.MBeanPermission "javax.slee.profile.ProfileMBean#editProfile", "invoke";
+    permission javax.management.MBeanPermission "javax.slee.profile.ProfileMBean#commitProfile", "invoke";
+
+    //
+    // javax.slee.usage.SbbUsageMBean
+    //
+    permission javax.management.MBeanPermission "javax.slee.usage.SbbUsageMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "javax.slee.usage.SbbUsageMBean#Service", "getAttribute";
+    permission javax.management.MBeanPermission "javax.slee.usage.SbbUsageMBean#UsageParameterSet", "getAttribute";
+    permission javax.management.MBeanPermission "javax.slee.usage.SbbUsageMBean#Sbb", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "javax.slee.usage.SbbUsageMBean#resetAllUsageParameters", "invoke";
+    permission javax.management.MBeanPermission "javax.slee.usage.SbbUsageMBean#close", "invoke";
+
+};
+
+grant principal com.opencloud.rhino.security.principal.RhinoRole "view" {
+
+    // Need getDomains permission to logon the embedded web-console        
+    permission javax.management.MBeanPermission "*","getDomains";
+    
+    //
+    // com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean#Types", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean#getFileType", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean#getKeys", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.configmanager.runtime.ContainerConfigurationMBean#getKeyDescription", "invoke";
+
+    //
+    // com.opencloud.rhino.limiting.LimiterManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#Limiters", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#LimiterEndpoints", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#LimiterEndpointsInfo", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#HierarchySummary", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#LimiterRampUpMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#SystemInputLimiterMBean", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#getLimiterForEndpoint", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterManagementMBean#getLimiterMBean", "invoke";
+
+    //
+    // com.opencloud.rhino.limiting.LimiterRampUpMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterRampUpMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterRampUpMBean#EventsPerIncrement", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterRampUpMBean#Enabled", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterRampUpMBean#RateIncrement", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.LimiterRampUpMBean#StartRate", "getAttribute";
+
+    //
+    // com.opencloud.rhino.limiting.QueueSaturationLimiterMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#Name", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#ChildLimiters", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#BypassedDefault", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#Parent", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#ConfigSummary", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#MaxSaturationDefault", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#Type", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#ConnectedEndPoints", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#getInfoSummary", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#getMaxSaturationForNode", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.QueueSaturationLimiterMBean#isBypassedForNode", "invoke";
+
+    //
+    // com.opencloud.rhino.limiting.RateLimiterMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#Name", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#ChildLimiters", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#BypassedDefault", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#Parent", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#TimeUnit", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#DepthDefault", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#ConfigSummary", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#Type", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#ConnectedEndPoints", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#MaxRateDefault", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#getMaxRateForNode", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#getInfoSummary", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#getDepthForNode", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.limiting.RateLimiterMBean#isBypassedForNode", "invoke";
+
+    //
+    // com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#NodesWithPerNodeActivationState", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getLongRunningTransactions", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getTimers", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getTimerInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getSbbInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getEventRouterThreadState", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getActivityInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getBoundActivities", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getSbbs", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getActivities", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getAttachedActivities", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.NodeHousekeepingMBean#getTransactionStateInfo", "invoke";
+
+    //
+    // com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#ClusterState", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#AllClusterNodes", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#QuorumNodes", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#NodeID", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#ClusterHousekeeping", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#EventRouterNodes", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#Version", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#isReady", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.admin.ext.RhinoHousekeepingMBean#getNodeHousekeeping", "invoke";
+
+    //
+    // com.opencloud.rhino.management.alarm.AlarmMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#Alarms", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#getAlarms", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#isActive", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#getDescriptors", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.alarm.AlarmMBean#getDescriptor", "invoke";
+
+    //
+    // com.opencloud.rhino.management.deployment.DeploymentMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#ResourceAdaptorTypes", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#Services", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#Libraries", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#Sbbs", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#EventTypes", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#ResourceAdaptors", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#DeployableUnits", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#ProfileSpecifications", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#getDeployableUnit", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#getReferringComponents", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#isInstalled", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#getDescriptors", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#getSbbs", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.deployment.DeploymentMBean#getDescriptor", "invoke";
+
+    //
+    // com.opencloud.rhino.management.profile.ProfileProvisioningMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#ProfileTables", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfilesByDynamicQuery", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfileTables", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfilesByIndexedAttribute", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfilesByStaticQuery", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getDefaultProfile", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfilesByAttribute", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfile", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfileSpecification", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfiles", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileProvisioningMBean#getProfileTableUsageMBean", "invoke";
+
+    //
+    // com.opencloud.rhino.management.profile.ProfileTableUsageMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#ProfileTableName", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#UsageMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#UsageParameterSets", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#UsageNotificationManagerMBean", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.profile.ProfileTableUsageMBean#getUsageMBean", "invoke";
+
+    //
+    // com.opencloud.rhino.management.resource.ResourceManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#ResourceAdaptorEntities", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#LinkNames", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getState", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getResourceUsageMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getResourceAdaptorEntities", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getNodes", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getBoundSbbs", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getConfigurationProperties", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getResourceAdaptorEntity", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getLinkNames", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceManagementMBean#getResourceAdaptor", "invoke";
+
+    //
+    // com.opencloud.rhino.management.resource.ResourceUsageMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#UsageMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#EntityName", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#UsageParameterSets", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#UsageNotificationManagerMBean", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.resource.ResourceUsageMBean#getUsageMBean", "invoke";
+
+    //
+    // com.opencloud.rhino.management.SleeManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#AlarmMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#ProfileProvisioningMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#StatsManagementMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#DeploymentMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#Subsystems", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#TraceMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#LimiterManagementMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#RhinoInspectorMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#ContainerConfigurationMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#ResourceManagementMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#State", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#SleeVendor", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#SleeVersion", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#SleeName", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#ServiceManagementMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#UserTransactionManagerMBean", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#getUsageMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#getState", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#getUsageNotificationManagerMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#getUsageParameterSets", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.SleeManagementMBean#getNodes", "invoke";
+
+    //
+    // com.opencloud.rhino.management.service.ServiceManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceManagementMBean#getState", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceManagementMBean#getNodes", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceManagementMBean#getServiceUsageMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceManagementMBean#getServices", "invoke";
+
+    //
+    // com.opencloud.rhino.management.service.ServiceUsageMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean#Service", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean#getSbbUsageMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean#getUsageParameterSets", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.service.ServiceUsageMBean#getSbbUsageNotificationManagerMBean", "invoke";
+
+    //
+    // com.opencloud.rhino.management.trace.TraceMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.trace.TraceMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.trace.TraceMBean#getTraceLevel", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.trace.TraceMBean#getTracersUsed", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.trace.TraceMBean#getTracersSet", "invoke";
+
+    //
+    // com.opencloud.rhino.management.usage.UsageMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageMBean#UsageParameterSet", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageMBean#UsageNotificationManagerMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageMBean#NotificationSource", "getAttribute";
+
+    //
+    // com.opencloud.rhino.management.usage.UsageNotificationManagerMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageNotificationManagerMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usage.UsageNotificationManagerMBean#NotificationSource", "getAttribute";
+
+    //
+    // com.opencloud.rhino.management.usertx.UserTransactionManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usertx.UserTransactionManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.usertx.UserTransactionManagementMBean#HasUserTransaction", "getAttribute";
+
+    //
+    // com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#ParameterSetTypeMappings", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#ParameterSetTypeDescriptions", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#ParameterSetNames", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#ParameterSetTypes", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#Members", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#RootParameterSetNames", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#subscribeSample", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#createDirectSession", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#subscribeCounter", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#getParameterSetNames", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#createSession", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#startCollecting", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#getAccumulatedSamples", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#removeSession", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#getParameterSetTypeDescription", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#stopCollecting", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#getParameterSetType", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.stats.ext.StatsManagementMBean#unsubscribe", "invoke";
+
+    //
+    // com.opencloud.rhino.logging.LoggingManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#Appenders", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#LogKeys", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#ColourConsole", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#ShowThread", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#ShowNDC", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getEffectiveLogLevel", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getCustomAppenderInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getLogLevel", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getThreshold", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getFileAppenderInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getAppenderRefs", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getSocketAppenderInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getSyslogAppenderInfo", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getAppenderProperties", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#isExists", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getCustomAppenderClassName", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getAdditivity", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.logging.LoggingManagementMBean#getAppenderType", "invoke";
+
+    //
+    // com.opencloud.rhino.management.AuditingManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.AuditingManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.AuditingManagementMBean#AuditLevel", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.management.AuditingManagementMBean#OpcodeXML", "getAttribute";
+
+    //
+    // com.opencloud.rhino.snmp.SNMPManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#Enabled", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#LoopbackAddressesAllowed", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#Description", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#Contact", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#DefaultSubnet", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#PortBindingsSaved", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#MIBs", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#Location", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#OIDMappings", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#NodeConfigIDs", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#DefaultLowPort", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#NotificationPort", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#Name", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#DefaultHighPort", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#AgentState", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#NodeConfigs", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#NotificationsEnabled", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#AddressBindingsSaved", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#NotificationAddress", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#getOIDMapping", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPManagementMBean#getSNMPNodeMBean", "invoke";
+
+    //
+    // com.opencloud.rhino.snmp.SNMPNodeMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPNodeMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPNodeMBean#BindPort", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.snmp.SNMPNodeMBean#BindAddresses", "getAttribute";
+
+    //
+    // com.opencloud.rhino.config.staging.StagingQueueManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.staging.StagingQueueManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.staging.StagingQueueManagementMBean#MaximumAge", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.staging.StagingQueueManagementMBean#MaximumSize", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.staging.StagingQueueManagementMBean#ThreadCount", "getAttribute";
+
+    //
+    // com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean#DefaultServiceObjectPoolConfigMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean#DefaultObjectPoolConfigMBean", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean#DefaultProfileTableObjectPoolConfigMBean", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean#getServiceObjectPoolConfigMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolManagementMBean#getProfileTableObjectPoolConfigMBean", "invoke";
+
+    //
+    // com.opencloud.rhino.config.ocbb.ObjectPoolMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean#StalePoolSize", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean#PooledPoolSize", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean#StatePoolSize", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean#ReadyPoolSize", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean#UseDefaults", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.ocbb.ObjectPoolMBean#InitialPooledPoolSize", "getAttribute";
+
+    //
+    // com.opencloud.rhino.monitoring.rules.config.ThresholdRuleManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleManagementMBean#ScanPeriod", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleManagementMBean#Rules", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleManagementMBean#getRule", "invoke";
+
+    //
+    // com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#ResetConditions", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#AlarmLevel", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#Active", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#TriggerPeriod", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#AlarmMessage", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#TriggerConditionsOperator", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#ResetPeriod", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#AlarmType", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#ResetConditionsOperator", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.monitoring.rules.config.ThresholdRuleMBean#TriggerConditions", "getAttribute";
+
+    //
+    // com.opencloud.rhino.config.license.LicenseManagementMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#LicenseSummary", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#Licenses", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#LicensedVersions", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#LicensedHosts", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#LicensedFunctions", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#getLicenseMBean", "invoke";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseManagementMBean#getLicensedCapacity", "invoke";
+
+    //
+    // com.opencloud.rhino.config.license.LicenseMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean#Functions", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean#ValidFrom", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean#ValidUntil", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean#CurrentlyValid", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean#Versions", "getAttribute";
+
+    // Operations
+    permission javax.management.MBeanPermission "com.opencloud.rhino.config.license.LicenseMBean#getLicensedCapacity", "invoke";
+
+    //
+    // com.opencloud.slee.mlet.jmxr.JMXRAdaptor
+    //
+    permission javax.management.MBeanPermission "com.opencloud.slee.mlet.jmxr.JMXRAdaptor", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "com.opencloud.slee.mlet.jmxr.JMXRAdaptor#State", "getAttribute";
+    permission javax.management.MBeanPermission "com.opencloud.slee.mlet.jmxr.JMXRAdaptor#ConnectorsString", "getAttribute";
+
+    //
+    // com.opencloud.management.loading.MLetLoaderMBean
+    //
+    permission javax.management.MBeanPermission "com.opencloud.management.loading.MLetLoaderMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    //
+    // javax.slee.profile.ProfileMBean
+    //
+    permission javax.management.MBeanPermission "javax.slee.profile.ProfileMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "javax.slee.profile.ProfileMBean#ProfileWriteable", "getAttribute";
+    permission javax.management.MBeanPermission "javax.slee.profile.ProfileMBean#ProfileDirty", "getAttribute";
+
+    //
+    // javax.slee.usage.SbbUsageMBean
+    //
+    permission javax.management.MBeanPermission "javax.slee.usage.SbbUsageMBean", "getMBeanInfo,queryNames,queryMBeans";
+
+    // Attributes
+    permission javax.management.MBeanPermission "javax.slee.usage.SbbUsageMBean#Service", "getAttribute";
+    permission javax.management.MBeanPermission "javax.slee.usage.SbbUsageMBean#UsageParameterSet", "getAttribute";
+    permission javax.management.MBeanPermission "javax.slee.usage.SbbUsageMBean#Sbb", "getAttribute";
+
+};
+

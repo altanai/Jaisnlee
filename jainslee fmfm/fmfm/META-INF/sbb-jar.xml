@@ -1,0 +1,390 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE sbb-jar PUBLIC "-//Sun Microsystems, Inc.//DTD JAIN SLEE SBB 1.1//EN" "http://java.sun.com/dtd/slee-sbb-jar_1_1.dtd">
+
+<sbb-jar>
+
+  <sbb>
+    <description>SIP Proxy SBB</description>
+    <sbb-name>${fmfm.proxy.sbb.name}</sbb-name>
+    <sbb-vendor>${fmfm.proxy.sbb.vendor}</sbb-vendor>
+    <sbb-version>${fmfm.proxy.sbb.version}</sbb-version> <!-- special version to separate standalone and FMFM proxy SBBs -->
+
+    <sbb-ref>
+      <sbb-name>${location.sbb.name}</sbb-name>
+      <sbb-vendor>${location.sbb.vendor}</sbb-vendor>
+      <sbb-version>${location.sbb.version}</sbb-version>
+      <sbb-alias>LOCATIONSBB</sbb-alias>
+    </sbb-ref>
+
+    <sbb-ref>
+      <sbb-name>${fmfm.sbb.name}</sbb-name>
+      <sbb-vendor>${fmfm.sbb.vendor}</sbb-vendor>
+      <sbb-version>${fmfm.sbb.version}</sbb-version>
+      <sbb-alias>FMFM</sbb-alias>
+    </sbb-ref>
+
+    <sbb-classes>
+
+      <sbb-abstract-class reentrant="True">
+        <sbb-abstract-class-name>
+          com.opencloud.slee.services.sip.proxy.ProxySbb
+        </sbb-abstract-class-name>
+
+        <cmp-field>
+          <cmp-field-name>proxyState</cmp-field-name>
+        </cmp-field>
+        <cmp-field>
+          <cmp-field-name>forking</cmp-field-name>
+        </cmp-field>
+        <cmp-field>
+          <cmp-field-name>recordRoute</cmp-field-name>
+        </cmp-field>
+        <cmp-field>
+          <cmp-field-name>invite</cmp-field-name>
+        </cmp-field>
+        <cmp-field>
+          <cmp-field-name>useLocationService</cmp-field-name>
+        </cmp-field>
+        <cmp-field>
+          <cmp-field-name>proxyResponseListener</cmp-field-name>
+          <sbb-alias-ref>FMFM</sbb-alias-ref>
+        </cmp-field>
+
+        <get-child-relation-method>
+          <sbb-alias-ref>
+            LOCATIONSBB
+          </sbb-alias-ref>
+          <get-child-relation-method-name>
+            getLocationServiceChildRelation
+          </get-child-relation-method-name>
+          <default-priority>0</default-priority>
+        </get-child-relation-method>
+
+      </sbb-abstract-class>
+
+      <sbb-local-interface>
+        <description>
+          Used by other SBBs to proxy requests
+        </description>
+        <sbb-local-interface-name>
+          com.opencloud.slee.services.sip.proxy.Proxy
+        </sbb-local-interface-name>
+      </sbb-local-interface>
+
+      <sbb-activity-context-interface>
+        <description>
+          Used to store information about responses as they are received
+        </description>
+        <sbb-activity-context-interface-name>
+          com.opencloud.slee.services.sip.proxy.ProxyResponseContextACI
+        </sbb-activity-context-interface-name>
+      </sbb-activity-context-interface>
+
+    </sbb-classes>
+
+    <!-- SIP Responses -->
+
+    <event event-direction="Receive" initial-event="False">
+      <event-name>100Response</event-name>
+      <event-type-ref>
+        <event-type-name>javax.sip.message.Response.PROVISIONAL</event-type-name>
+        <event-type-vendor>net.java.slee</event-type-vendor>
+        <event-type-version>1.2</event-type-version>
+      </event-type-ref>
+    </event>
+
+    <event event-direction="Receive" initial-event="False">
+      <event-name>200Response</event-name>
+      <event-type-ref>
+        <event-type-name>javax.sip.message.Response.SUCCESS</event-type-name>
+        <event-type-vendor>net.java.slee</event-type-vendor>
+        <event-type-version>1.2</event-type-version>
+      </event-type-ref>
+    </event>
+
+    <event event-direction="Receive" initial-event="False">
+      <event-name>300Response</event-name>
+      <event-type-ref>
+        <event-type-name>javax.sip.message.Response.REDIRECT</event-type-name>
+        <event-type-vendor>net.java.slee</event-type-vendor>
+        <event-type-version>1.2</event-type-version>
+      </event-type-ref>
+    </event>
+
+    <event event-direction="Receive" initial-event="False">
+      <event-name>400Response</event-name>
+      <event-type-ref>
+        <event-type-name>javax.sip.message.Response.CLIENT_ERROR</event-type-name>
+        <event-type-vendor>net.java.slee</event-type-vendor>
+        <event-type-version>1.2</event-type-version>
+      </event-type-ref>
+    </event>
+
+    <event event-direction="Receive" initial-event="False">
+      <event-name>500Response</event-name>
+      <event-type-ref>
+        <event-type-name>javax.sip.message.Response.SERVER_ERROR</event-type-name>
+        <event-type-vendor>net.java.slee</event-type-vendor>
+        <event-type-version>1.2</event-type-version>
+      </event-type-ref>
+    </event>
+
+    <event event-direction="Receive" initial-event="False">
+      <event-name>600Response</event-name>
+      <event-type-ref>
+        <event-type-name>javax.sip.message.Response.GLOBAL_FAILURE</event-type-name>
+        <event-type-vendor>net.java.slee</event-type-vendor>
+        <event-type-version>1.2</event-type-version>
+      </event-type-ref>
+    </event>
+
+    <!-- TIMER C -->
+
+    <event event-direction="Receive" initial-event="False">
+      <event-name>TimerC</event-name>
+      <event-type-ref>
+        <event-type-name>javax.slee.facilities.TimerEvent</event-type-name>
+        <event-type-vendor>javax.slee</event-type-vendor>
+        <event-type-version>1.0</event-type-version>
+      </event-type-ref>
+    </event>
+
+    <!-- Transaction Timeout -->
+
+    <event event-direction="Receive" initial-event="False">
+      <event-name>TransactionTimeout</event-name>
+      <event-type-ref>
+        <event-type-name>javax.sip.Timeout.TRANSACTION</event-type-name>
+        <event-type-vendor>net.java.slee</event-type-vendor>
+        <event-type-version>1.2</event-type-version>
+      </event-type-ref>
+    </event>
+
+    <env-entry>
+      <description>
+        Comma-separated list of domain names that this proxy is authoritative for.
+        The host part of the SIP URI must match one of these domain names for the
+        proxy to consider it local. Subdomains will not automatically match, they
+        must be specified here as well, eg. "abc.com,a.abc.com,b.abc.com"
+      </description>
+      <env-entry-name>domains</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value>${PROXY_DOMAINS}</env-entry-value>
+    </env-entry>
+
+    <env-entry>
+      <description>
+        Proxy Timer C value, in seconds.
+      </description>
+      <env-entry-name>timerC</env-entry-name>
+      <env-entry-type>java.lang.Integer</env-entry-type>
+      <env-entry-value>180</env-entry-value>
+    </env-entry>
+
+    <env-entry>
+      <description>
+        Does the proxy detect loops?
+      </description>
+      <env-entry-name>loopDetection</env-entry-name>
+      <env-entry-type>java.lang.Boolean</env-entry-type>
+      <env-entry-value>${PROXY_LOOP_DETECTION}</env-entry-value>
+    </env-entry>
+
+    <env-entry>
+      <env-entry-name>sipProviderName</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value>${SIP_PROVIDER}</env-entry-value>
+    </env-entry>
+
+    <env-entry>
+      <env-entry-name>sipACIFactoryName</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value>${SIP_ACIFACTORY}</env-entry-value>
+    </env-entry>
+
+    <resource-adaptor-type-binding>
+      <resource-adaptor-type-ref>
+        <resource-adaptor-type-name>${SIP_RATYPE_NAME}</resource-adaptor-type-name>
+        <resource-adaptor-type-vendor>${SIP_RATYPE_VENDOR}</resource-adaptor-type-vendor>
+        <resource-adaptor-type-version>${SIP_RATYPE_VERSION}</resource-adaptor-type-version>
+      </resource-adaptor-type-ref>
+      <activity-context-interface-factory-name>
+        ${SIP_ACIFACTORY}
+      </activity-context-interface-factory-name>
+      <resource-adaptor-entity-binding>
+        <resource-adaptor-object-name>
+          ${SIP_PROVIDER}
+        </resource-adaptor-object-name>
+        <resource-adaptor-entity-link>
+          ${SIP_LINKNAME}
+        </resource-adaptor-entity-link>
+      </resource-adaptor-entity-binding>
+    </resource-adaptor-type-binding>
+
+  </sbb>
+
+  <sbb id="fmfm">
+
+    <description>Find Me Follow Me SBB</description>
+    <sbb-name>${fmfm.sbb.name}</sbb-name>
+    <sbb-vendor>${fmfm.sbb.vendor}</sbb-vendor>
+    <sbb-version>${fmfm.sbb.version}</sbb-version>
+
+    <sbb-ref>
+      <sbb-name>${fmfm.proxy.sbb.name}</sbb-name>
+      <sbb-vendor>${fmfm.proxy.sbb.vendor}</sbb-vendor>
+      <sbb-version>${fmfm.proxy.sbb.version}</sbb-version>
+      <sbb-alias>PROXYSBB</sbb-alias>
+    </sbb-ref>
+
+    <profile-spec-ref>
+      <profile-spec-name>${fmfm.profile.name}</profile-spec-name>
+      <profile-spec-vendor>${fmfm.profile.vendor}</profile-spec-vendor>
+      <profile-spec-version>${fmfm.profile.version}</profile-spec-version>
+      <profile-spec-alias>FMFMPROFILE</profile-spec-alias>
+    </profile-spec-ref>
+
+    <sbb-classes>
+
+      <sbb-abstract-class reentrant="True">
+        <sbb-abstract-class-name>
+          com.opencloud.slee.services.sip.fmfm.FindMeFollowMeSbb
+        </sbb-abstract-class-name>
+
+        <cmp-field>
+          <cmp-field-name>connectingState</cmp-field-name>
+        </cmp-field>
+
+        <get-child-relation-method>
+          <sbb-alias-ref>
+            PROXYSBB
+          </sbb-alias-ref>
+          <get-child-relation-method-name>
+            getProxyChildRelation
+          </get-child-relation-method-name>
+          <default-priority>0</default-priority>
+        </get-child-relation-method>
+
+        <get-profile-cmp-method>
+          <profile-spec-alias-ref>FMFMPROFILE</profile-spec-alias-ref>
+          <get-profile-cmp-method-name>getFMFMSubscriberProfile</get-profile-cmp-method-name>
+        </get-profile-cmp-method>
+
+      </sbb-abstract-class>
+
+      <sbb-local-interface>
+        <description>
+          Used by other SBBs to proxy requests
+        </description>
+        <sbb-local-interface-name>
+          com.opencloud.slee.services.sip.proxy.ProxyResponseListener
+        </sbb-local-interface-name>
+      </sbb-local-interface>
+
+      <sbb-activity-context-interface>
+        <sbb-activity-context-interface-name>
+          com.opencloud.slee.services.sip.fmfm.CallStateACI
+        </sbb-activity-context-interface-name>
+      </sbb-activity-context-interface>
+
+    </sbb-classes>
+
+    <event event-direction="Receive" initial-event="True">
+      <event-name>InviteRequest</event-name>
+      <event-type-ref>
+        <event-type-name>javax.sip.message.Request.INVITE</event-type-name>
+        <event-type-vendor>net.java.slee</event-type-vendor>
+        <event-type-version>1.2</event-type-version>
+      </event-type-ref>
+      <initial-event-select variable="ActivityContext"/>
+    </event>
+
+    <event event-direction="Receive" initial-event="True">
+      <event-name>CancelRequest</event-name>
+      <event-type-ref>
+        <event-type-name>javax.sip.message.Request.CANCEL</event-type-name>
+        <event-type-vendor>net.java.slee</event-type-vendor>
+        <event-type-version>1.2</event-type-version>
+      </event-type-ref>
+      <initial-event-select variable="ActivityContext"/>
+    </event>
+
+    <event event-direction="Receive" initial-event="True">
+      <event-name>AckRequest</event-name>
+      <event-type-ref>
+        <event-type-name>javax.sip.message.Request.ACK</event-type-name>
+        <event-type-vendor>net.java.slee</event-type-vendor>
+        <event-type-version>1.2</event-type-version>
+      </event-type-ref>
+      <initial-event-selector-method-name>initialEventSelect</initial-event-selector-method-name>
+    </event>
+
+    <event event-direction="Receive" initial-event="True">
+      <event-name>ByeRequest</event-name>
+      <event-type-ref>
+        <event-type-name>javax.sip.message.Request.BYE</event-type-name>
+        <event-type-vendor>net.java.slee</event-type-vendor>
+        <event-type-version>1.2</event-type-version>
+      </event-type-ref>
+      <initial-event-selector-method-name>initialEventSelect</initial-event-selector-method-name>
+    </event>
+
+    <env-entry>
+      <description>If true, use JDBC for FMFM Subscriber info, otherwise use Profiles</description>
+      <env-entry-name>fmfmUseJDBC</env-entry-name>
+      <env-entry-type>java.lang.Boolean</env-entry-type>
+      <env-entry-value>${FMFM_USE_JDBC}</env-entry-value>
+    </env-entry>
+
+    <env-entry>
+      <description>Name of FMFM Subscriber Profile Table (if using Profiles)</description>
+      <env-entry-name>fmfmProfileTableName</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value>${FMFM_PROFILE_TABLE_NAME}</env-entry-value>
+    </env-entry>
+
+    <env-entry>
+      <env-entry-name>sipProviderName</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value>${SIP_PROVIDER}</env-entry-value>
+    </env-entry>
+
+    <env-entry>
+      <env-entry-name>sipACIFactoryName</env-entry-name>
+      <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value>${SIP_ACIFACTORY}</env-entry-value>
+    </env-entry>
+
+    <resource-adaptor-type-binding>
+      <resource-adaptor-type-ref>
+        <resource-adaptor-type-name>${SIP_RATYPE_NAME}</resource-adaptor-type-name>
+        <resource-adaptor-type-vendor>${SIP_RATYPE_VENDOR}</resource-adaptor-type-vendor>
+        <resource-adaptor-type-version>${SIP_RATYPE_VERSION}</resource-adaptor-type-version>
+      </resource-adaptor-type-ref>
+      <activity-context-interface-factory-name>
+        ${SIP_ACIFACTORY}
+      </activity-context-interface-factory-name>
+      <resource-adaptor-entity-binding>
+        <resource-adaptor-object-name>
+          ${SIP_PROVIDER}
+        </resource-adaptor-object-name>
+        <resource-adaptor-entity-link>
+          ${SIP_LINKNAME}
+        </resource-adaptor-entity-link>
+      </resource-adaptor-entity-binding>
+    </resource-adaptor-type-binding>
+
+  </sbb>
+
+  <security-permissions>
+    <!-- The proxy may need to do a hostname lookup when checking headers -->
+    <security-permission-spec>
+          grant {
+            permission java.net.SocketPermission "*:1024-", "resolve";
+          };
+    </security-permission-spec>
+  </security-permissions>
+
+</sbb-jar>
+
