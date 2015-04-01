@@ -1,3 +1,10 @@
+/* 
+* Developer : Altanai 
+* Date : 2013
+* website : http://altanaitelecom.wordpress.com 
+* Project : Request Rerouting
+*/
+ 
 package com.opencloud.slee.services.sip.b2bua;
 
 import com.opencloud.slee.services.sip.common.OCSipSbb;
@@ -34,8 +41,8 @@ import java.sql.SQLException;
 
 
 /**
- * Example showing how a simple B2BUA can be built using the
- * JAIN SIP 1.2 RA Type.
+ * Back To Back User Agent Servic eBulding Block 
+ * JAIN SIP 1.2 Resource Adapter Required to run this in Open Cloud Telecom application server (Rhino TAS)
  */
 public abstract class BackToBackUserAgentSbb extends OCSipSbb {
     protected String getTraceMessageType() { return "B2BUA"; }
@@ -43,7 +50,7 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
     DataSource ds ;
     Connection conn ;
 
-     String Callee_URI = null ;
+   String Callee_URI = null ;
 	 String Service_callscreening = null;
 	 String Service_callrouting = null ;
 	 String Service_sms = null;
@@ -81,15 +88,13 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
 
 //..................................................................for the global connections of database............//
 
-         try
-      	 {
+    try{
 
         	Context myEnv = (Context) new InitialContext().lookup("java:resource");
-		 ds = (DataSource) myEnv.lookup("jdbc/ExternalDataSource");
+          ds = (DataSource) myEnv.lookup("jdbc/ExternalDataSource");
+          finest("...................everything is working fine ...");
 
-		 finest("...................everything is working fine ...");
-
-      	 }
+    }
 		 catch (NamingException ne)
 		{
 
@@ -103,7 +108,7 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
 
 			finest(" calleee "+ Callee_URI);
 
-		    inviteeventmsg = event.getRequest().toString();
+		  inviteeventmsg = event.getRequest().toString();
 
 		 	int indexstart = inviteeventmsg.indexOf("From:",0);
 			int start= indexstart;
@@ -116,7 +121,7 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
 
 			finest("Caller_URI.length()"+Caller_URI.length() );
 
-			Caller_URI=Caller_URI.substring(7, Caller_URI.length()-20);
+			Caller_URI=Caller_URI.substring(7, Caller_URI.length()-6);
 
 			finest(" caller "+Caller_URI );
 //....................................................................................................//
@@ -136,15 +141,13 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
             incomingDialogACI.attach(getSbbLocalObject());
             outgoingDialogACI.attach(getSbbLocalObject());
 
- //.....................................................................................
+   //.....................................................................................
 
             finest("finished attaching ACI");
-            // Mask forked response events. Another root SBB entity will be created
-            // to process them.
+            // Mask forked response events. Another root SBB entity will be created to process them.
             getSbbContext().maskEvent(OUTGOING_EVENT_MASK, outgoingDialogACI);
 
-            // Record which dialog is which, so we can find the peer dialog when forwarding messages
-            // between dialogs.
+            // Record which dialog is which, so we can find the peer dialog when forwarding messages between dialogs.
             setIncomingDialog(incomingDialogACI);
             setOutgoingDialog(outgoingDialogACI);
 
@@ -160,9 +163,9 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
     		 	PreparedStatement stam = conn.prepareStatement(sql);
     		 	stam.setString(1, Callee_URI);
 
-				finest("sql :"+ sql);
-				finest("Callee_URI :"+Callee_URI );
-				finest("Prepared stsment  :"+ stam);
+  				finest("sql :"+ sql);
+  				finest("Callee_URI :"+Callee_URI );
+  				finest("Prepared stsment  :"+ stam);
 
     		 	rs = stam.executeQuery();
 
@@ -179,7 +182,7 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
     		 	}
     		 	rs.close();
     		 	stam.close();
-    		 	//jdbcclosed();
+    		 	jdbcclosed();
             }
             catch (Exception e)
             {
@@ -191,15 +194,15 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
 			finest(" yes & yes ");
        		 //block to get into the call screening block........executed
 
-	       		 			//jdbcconnection();
-	       		 			String sql = "SELECT callersipuri FROM callscreening where calleesipuri=?" ;
+	       		 			jdbcconnection();
+	       		 			String sql = "SELECT * FROM callscreening where calleesipuri=?" ;
 	       		 			PreparedStatement stam = conn.prepareStatement(sql);
 	       		 			stam.setString(1, Callee_URI);
 	       		 			ResultSet rs = stam.executeQuery();
 
 	       		 			while(rs.next())
 	       		 			{
-	       		 				Block_URI = rs.getString(1);
+	       		 				Block_URI = rs.getString(4);
 
 	       		 			}
 
@@ -207,8 +210,6 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
        		 				{
 									finest(".................... screen match found  ..");
 									//throw new Exception(" caller screened ");
-									rs.close();
-       			 					stam.close();
 									Response response = getSipMessageFactory().createResponse(403, st.getRequest());
 									st.sendResponse(response);
        		 				}
@@ -216,35 +217,28 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
 
        		 				else
        		 			    {
-
-									finest("into yes & yes else block");
        		 					// Run the code for the rerouting  request.// before it need to fetch the callee re-routing destinations.
-								//jdbcclosed();
-       					 			//jdbcconnection();
+
+       		 					rs.close();
+       			 				stam.close();
+       			 				jdbcclosed();
+
+       					 			jdbcconnection();
        					 			String sql1 = "SELECT * FROM callrerouting where calleesipuri=?" ;
        					 			PreparedStatement stam1 = conn.prepareStatement(sql1);
        					 			stam1.setString(1, Callee_URI);
        					 			ResultSet rs1 = stam1.executeQuery();
-									finest("sql :"+ sql1);
-									finest("Callee_URI :"+Callee_URI );
-									finest("Prepared stsment  :"+ stam1);	
-									
 
-								
-
-       					 			while(rs1.next())
+       					 			while(rs.next())
        					 			{
-										finest("into the rs.next..........");
-       					 				Reroute_URI = rs1.getString(1);
+       					 				Reroute_URI = rs1.getString(6);
 
        					 			}
 
        					 		// Reroute the sip reuqest tp Reroute_URI........
+                        uripass = getSipAddressFactory().createURI(Reroute_URI);
 
-										finest("uripass");
-		       							    uripass = getSipAddressFactory().createURI(Reroute_URI);
-
-		       					           		 finest("............. uripass "+ uripass);
+		       					    finest("............. uripass "+ uripass);
 
 		       					 		rs1.close();
 		       					 		stam1.close();
@@ -262,8 +256,8 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
 
        		 		try
 					{
-						finest("into the yes and no block");
-       		 			//jdbcconnection();
+						finest("into the yes and no block")
+       		 			jdbcconnection();
 					
        		 			String sql = "SELECT callersipuri FROM callscreening where calleesipuri=?" ;
        		 			PreparedStatement stam = conn.prepareStatement(sql);
@@ -273,17 +267,13 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
 						finest("Callee_URI :"+Callee_URI );
 						finest("Prepared stsment  :"+ stam);
 
-       		 			rs = stam.executeQuery();
+       		 			ResultSet rs = stam.executeQuery();
 
-						finest("query executed");
-							
-						
        		 			while(rs.next())
 
        		 			{
-							finest("into the while of Yes and No");
        		 				Block_URI = rs.getString(1);
-							finest(" Blocked_URI :"+Block_URI +" caller uri "+Caller_URI);
+							finest(" Blocked_URI :"+Block_URI);
 
        		 			}
        		 			if (Block_URI.contains(Caller_URI))
@@ -313,7 +303,7 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
        	 {
 
        			    finest(" no & yes ");
-       	 			//jdbcconnection();
+       	 			jdbcconnection();
        	 			String sql = "SELECT * FROM callrerouting where calleesipuri=?" ;
        	 			PreparedStatement stam = conn.prepareStatement(sql);
        	 			stam.setString(1, Callee_URI);
@@ -341,7 +331,6 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
          if (Service_callscreening.equalsIgnoreCase("no") && Service_callrouting.equalsIgnoreCase("no"))
          {
 			 finest(" no & no ");
-			 jdbcclosed();
         	 forwardRequest(st, outgoingDialog, true);
          }
 
@@ -715,12 +704,12 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
 
 		try
 	 	 {
-	     conn = ds.getConnection();
+	  conn = ds.getConnection();
 
 	     }
 		catch (Exception e)
 		{
-         finest("Exception in jdbc open");
+finest("Exception in jdbc open");
 		}
 
     	}
@@ -740,40 +729,104 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
 
 		private void forwardRequestReroute(ServerTransaction st, DialogActivity out, boolean initial) throws SipException
 	    {
+
+
 	        Request incomingRequest = st.getRequest();
 	        Request outgoingRequest = out.createRequest(incomingRequest);
+
 	        if (initial) {
-	            if (isLocalDomain(uripass, domains) )
+
+	            URI requestURI = incomingRequest.getRequestURI();
+
+	            //........................................
+	            //callee= requestURI.toString();
+
+	            URI requestingURI = outgoingRequest.getRequestURI();
+	            //caller= requestingURI.toString();
+	            //..........................................
+
+	            if (isLocalDomain(requestURI, domains) )
 	            {
-		                if (isTraceable(TraceLevel.FINE)) fine(uripass + " is in a local domain, lookup address in location service");                     
-						URI registeredAddress = lookupRegisteredAddress(uripass);
+		                if (isTraceable(TraceLevel.FINE)) fine(requestURI + " is in a local domain, lookup address in location service");
+		                URI registeredAddress = lookupRegisteredAddress(requestURI);
+
 		                if (registeredAddress == null)
-		            
-					if (registeredAddress == null) {
-                    if (isTraceable(TraceLevel.FINE)) fine("no registered address found for " + uripass);
-                    sendErrorResponse(st, Response.TEMPORARILY_UNAVAILABLE);
-                    return;
-                }
-                if (isTraceable(TraceLevel.FINE)) fine("found registered address: " + registeredAddress);
-                outgoingRequest.setRequestURI(registeredAddress);
-            }
-            else {
-                if (isTraceable(TraceLevel.FINE)) fine(uripass + " is outside our domain, forwarding");
-            }
-        }
-        if (isTraceable(TraceLevel.FINEST)) finest("forwarding request on dialog " + out + ":\n" + outgoingRequest);
-        if (incomingRequest.getMethod().equals(Request.ACK)) {
-            // Just forward the ACK statelessly - don't need to remember transaction state
-            out.sendAck(outgoingRequest);
-        }
-        else {
-            // Send the request on the dialog activity
-            ClientTransaction ct = out.sendRequest(outgoingRequest);
-            // Record an association with the original server transaction, so we can retrieve it
-            // when forwarding the response.
-            out.associateServerTransaction(ct, st);
-        }
-}
+		                {
+		                    if (isTraceable(TraceLevel.FINE)) fine("no registered address found for " + requestURI);
+
+		                    sendErrorResponse(st, Response.TEMPORARILY_UNAVAILABLE);
+
+		                    return;
+		                }
+		                if (isTraceable(TraceLevel.FINE)) fine("found registered address: " + registeredAddress);
+
+
+
+		                if (isTraceable(TraceLevel.FINEST))
+		                {
+		                	finest("............................");
+		                	finest(" caller "+ Caller_URI);
+		                	finest(" callee (requestURI) ");
+		                	finest(" callee (registered address) "+ registeredAddress);
+		                	finest(" callee pass ( uri pass) "+ uripass);
+		                	finest(" callee pass ( uri pass lookup) ");
+		                	finest("............................");
+		                }
+
+
+		                outgoingRequest.setRequestURI(registeredAddress);
+		        }
+
+		        else  if (isLocalDomain(uripass, domains))
+	            {
+		                if (isTraceable(TraceLevel.FINE)) fine(uripass + " is in a local domain, lookup address in location service");
+		                uripasslookup = lookupRegisteredAddress(uripass);
+
+		                if (uripasslookup == null)
+		                {
+		                    if (isTraceable(TraceLevel.FINE)) fine("no registered address found for " + uripasslookup);
+
+		                    sendErrorResponse(st, Response.TEMPORARILY_UNAVAILABLE);
+
+		                    return;
+		                }
+		                if (isTraceable(TraceLevel.FINE)) fine("found registered address: " + uripasslookup);
+
+		                if (isTraceable(TraceLevel.FINEST))
+		                {
+		                	finest("............................");
+		                	finest(" callee pass ( uri pass) "+ uripass);
+		                	finest(" callee pass ( uri pass lookup) "+ uripasslookup);
+		                	finest("............................");
+		                }
+
+
+		                outgoingRequest.setRequestURI(uripasslookup);
+		        }
+
+
+
+		        else
+		        {
+		           if (isTraceable(TraceLevel.FINE)) fine(requestURI + " is outside our domain, forwarding");
+		        }
+	        }
+
+	        if (isTraceable(TraceLevel.FINEST)) finest(".............................forwarding request on dialog " + out + ":\n" + outgoingRequest);
+
+	        if (incomingRequest.getMethod().equals(Request.ACK))
+	        {
+
+	            out.sendAck(outgoingRequest);
+	        }
+	        else
+	        {
+
+	            ClientTransaction ct = out.sendRequest(outgoingRequest);
+
+	            out.associateServerTransaction(ct, st);
+	        }
+	    }
 }
 
 

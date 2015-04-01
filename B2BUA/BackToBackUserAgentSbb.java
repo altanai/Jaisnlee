@@ -1,3 +1,11 @@
+/* 
+* Developer : Altanai 
+* Date : 2013
+* website : http://altanaitelecom.wordpress.com 
+* Project : Request Rerouting
+*/
+ 
+
 package com.opencloud.slee.services.sip.b2bua;
 
 import com.opencloud.javax.sip.slee.OCSleeSipProvider;
@@ -33,7 +41,10 @@ import java.text.ParseException;
 
 import java.util.List;
 
-
+/**
+ * Back To Back User Agent Service Bulding Block 
+ * JAIN SIP 1.2 Resource Adapter Required to run this in Open Cloud Telecom application server (Rhino TAS)
+ */
 public abstract class BackToBackUserAgentSbb extends OCSipSbb {
 
     protected String getTraceMessageType() { return "B2BUA"; }
@@ -74,14 +85,6 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
         ServerTransaction st = event.getServerTransaction();
 
         setInitialServerTransaction(aci);
-
-
-																																																					if (isTraceable(TraceLevel.FINEST)) finest("............ providr name "+ providerName);
-             
-																																																					if (isTraceable(TraceLevel.FINEST)) finest("............ factory Name "+ factoryName);
-            
-																																																					if (isTraceable(TraceLevel.FINEST)) finest("............ sipSbbInterface2 "+ sipSbbInterface2);
-            
 																																																					if (isTraceable(TraceLevel.FINEST)) finest("............ sipACIFactory2 "+ sipACIFactory2);
 /*...................................get from uri.........................................................*/
         inviteeventmsg = event.getRequest().toString();
@@ -117,7 +120,7 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
    
           	incomingDialog = (DialogActivity) getSleeSipProvider().getNewDialog(st);												                                                                         finer("initializing UAC dialog");
          
-		        outgoingDialog = getSleeSipProvider().getNewDialog(incomingDialog, true);
+		    outgoingDialog = getSleeSipProvider().getNewDialog(incomingDialog, true);
 
  
            	outgoingDialogACI = getSipACIFactory().getActivityContextInterface(outgoingDialog);

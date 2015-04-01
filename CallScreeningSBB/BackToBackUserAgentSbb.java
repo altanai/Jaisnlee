@@ -3,20 +3,9 @@ package com.opencloud.slee.services.sip.b2bua;
 import com.opencloud.slee.services.sip.common.OCSipSbb;
 import com.opencloud.slee.services.sip.location.LocationService;
 import com.opencloud.slee.services.sip.location.Registration;
-
-import com.opencloud.slee.services.sip.location.*;
-import net.java.slee.resource.sip.CancelRequestEvent;
-
-
-import net.java.slee.resource.sip.DialogActivity;
-import net.java.slee.resource.sip.DialogForkedEvent;
-
-import com.opencloud.javax.sip.slee.OCSleeSipProvider;
-
 import net.java.slee.resource.sip.CancelRequestEvent;
 import net.java.slee.resource.sip.DialogActivity;
 import net.java.slee.resource.sip.DialogForkedEvent;
-
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -51,6 +40,21 @@ import java.sql.SQLException;
 public abstract class BackToBackUserAgentSbb extends OCSipSbb {
     protected String getTraceMessageType() { return "B2BUA"; }
 
+    DataSource ds ;
+    Connection conn ;
+
+     String Callee_URI = null ;
+	 String Service_callscreening = null;
+	 String Service_callrouting = null ;
+	 String Service_sms = null;
+	 String Caller_URI = null;
+	 String Block_URI = null ;
+	 String Reroute_URI = null ;
+	 String  inviteeventmsg = null ;
+	 URI    uripass = null ;
+	 URI uripasslookup = null;
+	 ResultSet rs =null;
+
     public void setSbbContext(SbbContext context) {
         super.setSbbContext(context);
         try {
@@ -63,60 +67,63 @@ public abstract class BackToBackUserAgentSbb extends OCSipSbb {
 
     /**
      * An out-of-dialog INVITE has been received - this is the initial event.
+     * @throws SipException
+     * @throws Exception
      */
-    public void onInitialInvite(RequestEvent event, ActivityContextInterface aci) {
+    public void onInitialInvite(RequestEvent event, ActivityContextInterface aci)  {
 
-try 
-           	 { 
-
-		Context myEnv = (Context) new InitialContext().lookup("java:resource"); 
-			 ds = (DataSource) myEnv.lookup("jdbc/ExternalDataSource");
-
-	finest("...................everything is working fine ...");
-
-	}
-			 catch (NamingException ne) 
-			{ 
-
-			severe("Could not set SBB context", ne); 
-			finest("....................Exzception with datasource");
-			}   
-
-			try
-			{
-						
-			Connection conn = ds.getConnection();  
-   
-	    Statement stam = conn.createStatement();
-        ResultSet rs=rs = stam.executeQuery("SELECT * from JAINSLEECALLSCEENING");
-		finest("+++++++++++++++ Data values fetched from database ");
-		while (rs.next()) 
-		{
-			finest(".................... caller "+ rs.getString(1));
-	        finest(".................... callee "+ rs.getString(2));
-		}
-		rs.close();
-		stam.close();
-		
-   		}
-	
-   		catch (Exception e)
-   		{
-   			severe("................Exception with postgres", e); 	
-			finest("....................Exzception with postgres");
-   		}		
-		
-        OCSleeSipProvider p = (OCSleeSipProvider) event.getSource();
-        // ACI is the server transaction activity
+    	// ACI is the server transaction activity
         ServerTransaction st = event.getServerTransaction();
         // Stay attached to server transaction, in case we get a CANCEL.
         // Save ACI so we can distinguish CANCEL events arriving on the server transaction
         // (cancelled initial INVITE) from events arriving on a dialog (cancelled re-INVITE).
         setInitialServerTransaction(aci);
 
+//..................................................................for the global connections of database............//
+
+         try
+      	 {
+
+        	Context myEnv = (Context) new InitialContext().lookup("java:resource");
+		 ds = (DataSource) myEnv.lookup("jdbc/ExternalDataSource");
+
+		 finest("...................everything is working fine ...");
+
+      	 }
+		 catch (NamingException ne)
+		{
+
+		severe("Could not set SBB context", ne);
+		finest("....................Exception with datasource");
+		}
+
+//................................TO get from URI and To get TO URI.....get Caller and Callee URI...//
+
+		 Callee_URI = st.getRequest().getRequestURI().toString();
+
+			finest(" calleee "+ Callee_URI);
+
+		    inviteeventmsg = event.getRequest().toString();
+
+		 	int indexstart = inviteeventmsg.indexOf("From:",0);
+			int start= indexstart;
+
+			int indexend = inviteeventmsg.indexOf(";tag=",0);
+			int end = indexend;
+
+			finest(" start " + start +" : end "+ end);
+			Caller_URI = inviteeventmsg.substring(start,end);
+
+			finest("Caller_URI.length()"+Caller_URI.length() );
+
+			Caller_URI=Caller_URI.substring(7, Caller_URI.length()-20);
+
+			finest(" caller "+Caller_URI );
+//....................................................................................................//
+
         if (isTraceable(TraceLevel.FINEST)) finest("received initial INVITE:\n" + event.getRequest());
 
-        try {
+      try{
             // Create the dialogs representing the incoming and outgoing call legs.
             finer("initializing UAS dialog");
             DialogActivity incomingDialog = (DialogActivity) getSleeSipProvider().getNewDialog(st);
@@ -129,6 +136,9 @@ try
             incomingDialogACI.attach(getSbbLocalObject());
             outgoingDialogACI.attach(getSbbLocalObject());
 
+ //.....................................................................................
+
+            finest("finished attaching ACI");
             // Mask forked response events. Another root SBB entity will be created
             // to process them.
             getSbbContext().maskEvent(OUTGOING_EVENT_MASK, outgoingDialogACI);
@@ -138,11 +148,209 @@ try
             setIncomingDialog(incomingDialogACI);
             setOutgoingDialog(outgoingDialogACI);
 
-            forwardRequest(st, outgoingDialog, true);
-        } catch (Exception e) {
-            warn("failed to forward initial request", e);
-            sendErrorResponse(st, Response.SERVER_INTERNAL_ERROR);
-        }
+
+			finest("finished creating dialogues");
+//...................................................................block to fetch the services he/she has subscribed for....//
+
+            try {
+
+				//conn = ds.getConnection();
+    		 	jdbcconnection();
+    		 	String sql = "SELECT * FROM services where usersipuri=?" ;
+    		 	PreparedStatement stam = conn.prepareStatement(sql);
+    		 	stam.setString(1, Callee_URI);
+
+				finest("sql :"+ sql);
+				finest("Callee_URI :"+Callee_URI );
+				finest("Prepared stsment  :"+ stam);
+
+    		 	rs = stam.executeQuery();
+
+    		 	while(rs.next())
+    		 	{
+    		 		Service_callscreening = rs.getString(3);
+    		 		Service_callrouting = rs.getString(4);
+    		 		Service_sms = rs.getString(5);
+    		 		//System.out.println(rs.getString(1));
+    		 		finest("service callscreening : "+ Service_callscreening);
+    		 		finest("service callrerouting : "+Service_callrouting);
+    		 		finest("service_sms : "+Service_sms);
+
+    		 	}
+    		 	rs.close();
+    		 	stam.close();
+    		 	//jdbcclosed();
+            }
+            catch (Exception e)
+            {
+			finest("exception in services");
+    		}
+
+            if ( Service_callscreening.equalsIgnoreCase("yes")&& Service_callrouting.equalsIgnoreCase("yes")){
+
+			finest(" yes & yes ");
+       		 //block to get into the call screening block........executed
+
+	       		 			//jdbcconnection();
+	       		 			String sql = "SELECT callersipuri FROM callscreening where calleesipuri=?" ;
+	       		 			PreparedStatement stam = conn.prepareStatement(sql);
+	       		 			stam.setString(1, Callee_URI);
+	       		 			ResultSet rs = stam.executeQuery();
+
+	       		 			while(rs.next())
+	       		 			{
+	       		 				Block_URI = rs.getString(1);
+
+	       		 			}
+
+       		 				if(Block_URI.contains(Caller_URI))
+       		 				{
+									finest(".................... screen match found  ..");
+									//throw new Exception(" caller screened ");
+									rs.close();
+       			 					stam.close();
+									Response response = getSipMessageFactory().createResponse(403, st.getRequest());
+									st.sendResponse(response);
+       		 				}
+
+
+       		 				else
+       		 			    {
+
+									   finest("into yes & yes else block");
+       		 					  // Run the code for the rerouting  request.// before it need to fetch the callee re-routing destinations.
+								      //jdbcclosed();
+       					 			//jdbcconnection();
+       					 			String sql1 = "SELECT * FROM callrerouting where calleesipuri=?" ;
+       					 			PreparedStatement stam1 = conn.prepareStatement(sql1);
+       					 			stam1.setString(1, Callee_URI);
+       					 			ResultSet rs1 = stam1.executeQuery();
+									finest("sql :"+ sql1);
+									finest("Callee_URI :"+Callee_URI );
+									finest("Prepared stsment  :"+ stam1);	
+									
+
+								
+
+       					 			while(rs1.next())
+       					 			{
+										finest("into the rs.next..........");
+       					 				Reroute_URI = rs1.getString(6);
+
+       					 			}
+
+       					 		// Reroute the sip reuqest tp Reroute_URI........
+
+										finest("uripass");
+		       					uripass = getSipAddressFactory().createURI(Reroute_URI);
+		       					finest("............. uripass "+ uripass);
+		       					 		rs1.close();
+		       					 		stam1.close();
+		       					 		jdbcclosed();
+		       					 		forwardRequestReroute(st, outgoingDialog, true);
+       			 				}
+
+
+       		}
+
+            if ( Service_callscreening.equalsIgnoreCase("yes")&& Service_callrouting.equalsIgnoreCase("no"))
+			{
+    			finest(" yes & no ");
+       		 //block to get into the call screening block........executed
+
+       		 		try
+					{
+						finest("into the yes and no block");
+       		 			//jdbcconnection();
+					
+       		 			String sql = "SELECT callersipuri FROM callscreening where calleesipuri=?" ;
+       		 			PreparedStatement stam = conn.prepareStatement(sql);
+       		 			stam.setString(1, Callee_URI);
+
+						finest("sql :"+ sql);
+						finest("Callee_URI :"+Callee_URI );
+						finest("Prepared stsment  :"+ stam);
+
+       		 			rs = stam.executeQuery();
+
+						finest("query executed");
+							
+						
+       		 			while(rs.next())
+
+       		 			{
+							finest("into the while of Yes and No");
+       		 				Block_URI = rs.getString(1);
+							finest(" Blocked_URI :"+Block_URI +" caller uri "+Caller_URI);
+
+       		 			}
+       		 			if (Block_URI.contains(Caller_URI))
+       		 			{
+       		 				finest(".................... screen match found  ..");
+							Response response = getSipMessageFactory().createResponse(403, st.getRequest());
+							st.sendResponse(response);
+       		 			}
+       		 			else
+       		 			{
+							finest(".................... no match found  ..");
+       		 				forwardRequest(st, outgoingDialog, true);
+       		 			}
+       		 				rs.close();
+       		 				stam.close();
+       		 				jdbcclosed();
+       		 		}
+       		 		catch (Exception e)
+       				{
+       					finest("problem in yes no call screenig ");
+
+       				}
+
+       	 }
+
+         if (Service_callscreening.equalsIgnoreCase("no") && Service_callrouting.equalsIgnoreCase("yes"))
+       	 {
+
+       			    finest(" no & yes ");
+       	 			//jdbcconnection();
+       	 			String sql = "SELECT * FROM callrerouting where calleesipuri=?" ;
+       	 			PreparedStatement stam = conn.prepareStatement(sql);
+       	 			stam.setString(1, Callee_URI);
+       	 			ResultSet rs = stam.executeQuery();
+
+					finest("sql :"+ sql);
+					finest("Callee_URI :"+Callee_URI );
+					finest("Prepared stsment  :"+ stam);
+
+       	 			while(rs.next())
+       	 			{
+       	 				Reroute_URI = rs.getString(6);
+						finest(" Reroute_URI :"+Reroute_URI);
+
+       	 			}
+       	 			uripass = getSipAddressFactory().createURI(Reroute_URI);
+       	 			finest("............. uripass "+ uripass);
+
+				 		rs.close();
+				 		stam.close();
+				 		jdbcclosed();
+				 		forwardRequestReroute(st, outgoingDialog, true);
+       	 }
+
+         if (Service_callscreening.equalsIgnoreCase("no") && Service_callrouting.equalsIgnoreCase("no"))
+         {
+			 finest(" no & no ");
+			 jdbcclosed();
+        	 forwardRequest(st, outgoingDialog, true);
+         }
+
+      }
+
+      catch(Exception e)
+
+      {
+    	  finest("exception in main try block");
+
+      }
     }
 
     /**
@@ -179,7 +387,6 @@ try
     }
 
     public void on2xxResponse(ResponseEvent event, ActivityContextInterface aci) {
-        OCSleeSipProvider p = (OCSleeSipProvider) event.getSource();
         processResponse(event, aci);
     }
 
@@ -206,7 +413,6 @@ try
     }
 
     public void onBye(RequestEvent event, ActivityContextInterface aci) {
-        OCSleeSipProvider p = (OCSleeSipProvider) event.getSource();
         processMidDialogRequest(event, aci);
     }
 
@@ -502,4 +708,75 @@ try
     private String[] domains;
 
     private static final String[] OUTGOING_EVENT_MASK = new String[] { "DialogForked" };
+
+    public void jdbcconnection (){
+
+		try
+	 	 {
+	     conn = ds.getConnection();
+
+	     }
+		catch (Exception e)
+		{
+         finest("Exception in jdbc open");
+		}
+
+    	}
+		public  void jdbcclosed()
+		{
+
+				try
+				{
+		   		    conn.close();
+				}
+		       catch (SQLException e)
+		       {
+					// TODO Auto-generated catch block
+					finest("Exception in jdbc closed");
+				}
+		}
+
+		private void forwardRequestReroute(ServerTransaction st, DialogActivity out, boolean initial) throws SipException
+	    {
+	        Request incomingRequest = st.getRequest();
+	        Request outgoingRequest = out.createRequest(incomingRequest);
+	        if (initial) {
+	            if (isLocalDomain(uripass, domains) )
+	            {
+		                if (isTraceable(TraceLevel.FINE)) fine(uripass + " is in a local domain, lookup address in location service");                     
+						URI registeredAddress = lookupRegisteredAddress(uripass);
+		                if (registeredAddress == null)
+		            
+					if (registeredAddress == null) {
+                    if (isTraceable(TraceLevel.FINE)) fine("no registered address found for " + uripass);
+                    sendErrorResponse(st, Response.TEMPORARILY_UNAVAILABLE);
+                    return;
+                }
+                if (isTraceable(TraceLevel.FINE)) fine("found registered address: " + registeredAddress);
+                outgoingRequest.setRequestURI(registeredAddress);
+            }
+            else {
+                if (isTraceable(TraceLevel.FINE)) fine(uripass + " is outside our domain, forwarding");
+            }
+        }
+        if (isTraceable(TraceLevel.FINEST)) finest("forwarding request on dialog " + out + ":\n" + outgoingRequest);
+        if (incomingRequest.getMethod().equals(Request.ACK)) {
+            // Just forward the ACK statelessly - don't need to remember transaction state
+            out.sendAck(outgoingRequest);
+        }
+        else {
+            // Send the request on the dialog activity
+            ClientTransaction ct = out.sendRequest(outgoingRequest);
+            // Record an association with the original server transaction, so we can retrieve it
+            // when forwarding the response.
+            out.associateServerTransaction(ct, st);
+        }
 }
+}
+
+
+
+
+
+
+

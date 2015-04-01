@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE oc-service-xml PUBLIC "-//Open Cloud Ltd.//DTD JAIN SLEE Service Extension 1.0//EN" "http://www.opencloud.com/dtd/oc-service-xml_1_0.dtd">
-
-<oc-service-xml>
-  <service id="b2bua">
-    <service-properties replicated="${B2BUA_REPLICATED}"/>
-  </service>
-</oc-service-xml>
